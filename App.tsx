@@ -1,118 +1,63 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * Generated with the TypeScript template
- * https://github.com/react-native-community/react-native-template-typescript
- *
- * @format
- */
+import React, {useEffect, useRef, useState} from 'react';
+import {View, Animated, Text} from 'react-native';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+const Box = ({backgroundColor = '#3cae6f', scale = 1}) => (
+  <Animated.View
+    style={[
+      {
+        width: 100,
+        height: 100,
+        backgroundColor,
+        transform: [{scale}],
+      },
+    ]}
+  />
+);
+const usePulse = (startDelay = 500) => {
+  const scale = useRef(new Animated.Value(1)).current;
 
-import React from 'react';
-import {
-  SafeAreaView,
-  StyleSheet,
-  ScrollView,
-  View,
-  Text,
-  StatusBar,
-} from 'react-native';
+  const pulse = () => {
+    Animated.sequence([
+      Animated.timing(scale, {toValue: 1.2, useNativeDriver: false}),
+      Animated.timing(scale, {toValue: 0.8, useNativeDriver: false}),
+    ]).start(() => pulse());
+  };
 
-import {
-  Header,
-  LearnMoreLinks,
-  Colors,
-  DebugInstructions,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  useEffect(() => {
+    const timeout = setTimeout(() => pulse(), startDelay);
+    return () => clearTimeout(timeout);
+  }, []);
 
-declare const global: {HermesInternal: null | {}};
+  return scale;
+};
 
-const App = () => {
+const Item = ({count}) => {
+  const scale = usePulse();
+  const scale2 = usePulse(750);
+
   return (
-    <>
-      <StatusBar barStyle="dark-content" />
-      <SafeAreaView>
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
-          <Header />
-          {global.HermesInternal == null ? null : (
-            <View style={styles.engine}>
-              <Text style={styles.footer}>Engine: Hermes</Text>
-            </View>
-          )}
-          <View style={styles.body}>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Step One</Text>
-              <Text style={styles.sectionDescription}>
-                Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-                screen and then come back to see your edits.
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>See Your Changes</Text>
-              <Text style={styles.sectionDescription}>
-                <ReloadInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Debug</Text>
-              <Text style={styles.sectionDescription}>
-                <DebugInstructions />
-              </Text>
-            </View>
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Learn More</Text>
-              <Text style={styles.sectionDescription}>
-                Read the docs to discover what to do next:
-              </Text>
-            </View>
-            <LearnMoreLinks />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </>
+    <View
+      style={{flex: 1, alignItems: 'center', justifyContent: 'space-around'}}>
+      <Box scale={scale2} backgroundColor="#1f9cb8" />
+      <Text>{count}</Text>
+      <Box scale={scale} />
+      <AntDesign name="bars" size={30} />
+    </View>
   );
 };
 
-const styles = StyleSheet.create({
-  scrollView: {
-    backgroundColor: Colors.lighter,
-  },
-  engine: {
-    position: 'absolute',
-    right: 0,
-  },
-  body: {
-    backgroundColor: Colors.white,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: Colors.black,
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-    color: Colors.dark,
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  footer: {
-    color: Colors.dark,
-    fontSize: 12,
-    fontWeight: '600',
-    padding: 4,
-    paddingRight: 12,
-    textAlign: 'right',
-  },
-});
+const App = () => {
+  const [count, setCount] = useState(0);
 
+  useEffect(() => {
+    console.log('log count', count);
+    const interval = setInterval(() => {
+      setCount((prevCount) => prevCount + 1);
+    }, 1000);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [count]);
+  return <Item count={count} />;
+};
 export default App;
